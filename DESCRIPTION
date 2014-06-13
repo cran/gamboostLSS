@@ -1,17 +1,20 @@
 Package: gamboostLSS
 Type: Package
-Title: Boosting Methods for GAMLSS Models
-Version: 1.0-3
-Date: 2011-11-16
+Title: Boosting Methods for GAMLSS
+Version: 1.1-0
+Date: 2014-06-12
 Author: Benjamin Hofner, Andreas Mayr, Nora Fenske, Matthias Schmid
-Maintainer: Benjamin Hofner <benjamin.hofner@imbe.med.uni-erlangen.de>
+Maintainer: Benjamin Hofner <benjamin.hofner@fau.de>
 Description: Boosting models for fitting generalized additive models for
-  location, shape and scale (gamLSS models) to potentially high dimensional
+  location, shape and scale (GAMLSS) to potentially high dimensional
   data.
-Depends: R (>= 2.10.0), splines, survival, methods, mboost (>= 2.0-12)
-Suggests: gamlss
+Depends: R (>= 2.10.0), mboost (>= 2.2-3)
+Suggests: gamlss, BayesX, gamlss.dist
 LazyLoad: yes
+LazyData: yes
 License: GPL-2
-Packaged: 2011-11-16 19:22:52 UTC; hofnerb
+URL: http://r-forge.r-project.org/projects/gamboostlss/
+Packaged: 2014-06-12 17:56:47 UTC; bhofner
+NeedsCompilation: no
 Repository: CRAN
-Date/Publication: 2011-11-17 11:25:49
+Date/Publication: 2014-06-13 01:14:28
