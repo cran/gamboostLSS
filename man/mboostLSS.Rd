@@ -192,16 +192,15 @@ coef(model, off2int = TRUE)
 ### estimate model with different formulas for mu and sigma:
 names(NBinomialLSS())      # names of the family
 
-\dontrun{## (automatically) as this takes too long for automated CRAN checks
-  # Note: Multiple formulas must be specified via a _named list_
-  #       where the names correspond to the names of the distribution parameters
-  #       in the family (see above)
-  model2 <- glmboostLSS(formula = list(mu = y ~ x1 + x2 + x3 + x4,
-                                      sigma = y ~ x3 + x4 + x5 + x6),
-                       families = NBinomialLSS(), data = dat,
-                       control = boost_control(mstop = 400, trace = TRUE),
-                       center = TRUE)
-  coef(model2, off2int = TRUE)
+\donttest{# Note: Multiple formulas must be specified via a _named list_
+#       where the names correspond to the names of the distribution parameters
+#       in the family (see above)
+model2 <- glmboostLSS(formula = list(mu = y ~ x1 + x2 + x3 + x4,
+                                    sigma = y ~ x3 + x4 + x5 + x6),
+                     families = NBinomialLSS(), data = dat,
+                     control = boost_control(mstop = 400, trace = TRUE),
+                     center = TRUE)
+coef(model2, off2int = TRUE)
 }
 
 
@@ -217,28 +216,25 @@ coef(model)
 log(mean(mu))
 log(mean(sigma))
 
-\dontrun{## (automatically) as this takes too long for automated CRAN checks
-  ### use different mstop values for the two distribution parameters
-  ### (two-dimensional early stopping)
-  ### the number of iterations is passed to boost_control via a named list
-  model3 <- glmboostLSS(formula = list(mu = y ~ x1 + x2 + x3 + x4,
-                                      sigma = y ~ x3 + x4 + x5 + x6),
-                       families = NBinomialLSS(), data = dat,
-                       control = boost_control(mstop = list(mu = 400,
-                                                            sigma = 300),
-                                               trace  = TRUE),
-                       center = TRUE)
-  coef(model3, off2int = TRUE)
-}
+\donttest{### use different mstop values for the two distribution parameters
+### (two-dimensional early stopping)
+### the number of iterations is passed to boost_control via a named list
+model3 <- glmboostLSS(formula = list(mu = y ~ x1 + x2 + x3 + x4,
+                                    sigma = y ~ x3 + x4 + x5 + x6),
+                     families = NBinomialLSS(), data = dat,
+                     control = boost_control(mstop = list(mu = 400,
+                                                          sigma = 300),
+                                             trace  = TRUE),
+                     center = TRUE)
+coef(model3, off2int = TRUE)
 
-\dontrun{## (automatically) as this takes too long for automated CRAN checks
-  ### Alternatively we can subset model2:
-  # here it is assumed that the first element in the vector corresponds to
-  # the first distribution parameter of model2 etc.
-  model2[c(400, 300)]
-  par(mfrow = c(1,2))
-  plot(model2, xlim = c(0, max(mstop(model2))))
-  ## all.equal(coef(model2), coef(model3)) # same!
+### Alternatively we can subset model2:
+# here it is assumed that the first element in the vector corresponds to
+# the first distribution parameter of model2 etc.
+model2[c(400, 300)]
+par(mfrow = c(1,2))
+plot(model2, xlim = c(0, max(mstop(model2))))
+## all.equal(coef(model2), coef(model3)) # same!
 }
 
 ### WARNING: Subsetting via model[mstopnew] changes the model directly!
