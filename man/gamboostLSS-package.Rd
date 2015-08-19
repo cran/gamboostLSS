@@ -14,8 +14,8 @@
   This package uses boosting algorithms for fitting GAMLSS (generalized
   additive models for location, scale and shape). For information on
   GAMLSS theory see Rigby and Stasinopoulos (2005), or the information
-  provided at \url{http://gamlss.org}.
-
+  provided at \url{http://gamlss.org}. For a tutorial on
+  \code{\link{gamboostLSS}} see Hofner et al. (2015).
 
   The fitting methods \code{\link{glmboostLSS}} and
   \code{\link{gamboostLSS}}, are alternatives for the algorithms
@@ -24,17 +24,15 @@
   selecion and model choice for potentially high-dimensional data
   settings.
 
-
   \code{\link{glmboostLSS}} (for linear effects) and
   \code{\link{gamboostLSS}} (for smooth effects) depend on their
   analogous companions \code{\link[mboost]{glmboost}} and
   \code{\link[mboost]{gamboost}} for generalized additive models
-  (contained in package \code{\link{mboost}}, see Hothorn et al. 2010a,
-  b) and are similar in their usage.
+  (contained in package \code{\link{mboost}}, see Hothorn et al. 2010,
+  2015) and are similar in their usage.
 
   The package includes some pre-defined GAMLSS distributions, but the
   user can also specify new distributions with \code{\link{Families}}.
-
 
   A wide range of different base-learners is available for covariate
   effects (see \code{\link[mboost]{baselearners}}) including linear
@@ -47,9 +45,15 @@
 \author{
   Benjamin Hofner, Andreas Mayr, Nora Fenske, Matthias Schmid
 
-  Maintainer:  Benjamin Hofner <benjamin.hofner@imbe.med.uni-erlangen.de>
+  Maintainer:  Benjamin Hofner <benjamin.hofner@fau.de>
 }
 \references{
+
+  B. Hofner, A. Mayr, M. Schmid (2015). gamboostLSS: An R Package for
+  Model Building and Variable Selection in the GAMLSS Framework.
+  Journal of Statistical Software. Accepted for publication.
+
+  Available as \code{vignette("gamboostLSS_Tutorial")}.
 
   Mayr, A., Fenske, N., Hofner, B., Kneib, T. and Schmid, M. (2012):
   Generalized additive models for location, scale and shape for
@@ -72,13 +76,13 @@
   Buehlmann, P. and Hothorn, T. (2007). Boosting algorithms: Regularization,
   prediction and model fitting. Statistical Science, 22(4), 477--505.
 
-  Hothorn, T., Buehlmann, P., Kneib, T., Schmid, M. and Hofner, B. (2010a).
+  Hothorn, T., Buehlmann, P., Kneib, T., Schmid, M. and Hofner, B. (2010).
   Model-based boosting 2.0. Journal of Machine Learning Research 11(Aug),
   2109-2113.
 
-  Hothorn, T., Buehlmann, P., Kneib, T., Schmid, M. and Hofner, B. (2010b).
-  mboost: Model-based boosting 2.0. R package version 2.0-9.
-  \url{http://cran.r-project.org/web/packages/mboost}
+  Hothorn, T., Buehlmann, P., Kneib, T., Schmid, M. and Hofner, B. (2015).
+  mboost: Model-based boosting. R package version 2.4-2.
+  \url{http://cran.r-project.org/package=mboost}
 }
 \keyword{ package }
 

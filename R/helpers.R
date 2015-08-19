@@ -52,12 +52,48 @@ get_families_name <- function(x) {
     attr(attr(x, "families"), "name")
 }
 
+## make generic get_qfun function
+get_qfun <- function(x, ...)
+    UseMethod("get_qfun")
+
 ## extract family name from a gamboostLSS model (used in plot_PI)
-get_qfun <- function(x) {
+get_qfun.mboostLSS <- function(x) {
     qfun <- attr(attr(x, "families"), "qfun")
     if (is.null(qfun))
         stop("Currently not implemented for this family")
     return(qfun)
+}
+
+## obtain pdf from gamlss.dist or global environment
+## (needed in as.families)
+get_qfun.character <- function(x) {
+    qfun <- paste("gamlss.dist::q", x, sep = "")
+    pdf <- try(eval(parse(text = qfun)), silent = TRUE)
+    if (inherits(pdf, "try-error")) {
+        ## try to find the function in global environment
+        ## this is needed e.g. for truncated families
+        qfun2 <- paste("q", x, sep = "")
+        pdf <- try(eval(parse(text = qfun2)), silent = TRUE)
+        if (inherits(pdf, "try-error"))
+            stop(sQuote(qfun2), " and ", sQuote(qfun), " do not exist.")
+    }
+    return(pdf)
+}
+
+## obtain pdf from gamlss.dist or global environment
+## (needed in as.families)
+get_pdf <- function(x) {
+    dfun <- paste("gamlss.dist::d", x, sep = "")
+    pdf <- try(eval(parse(text = dfun)), silent = TRUE)
+    if (inherits(pdf, "try-error")) {
+        ## try to find the function in global environment
+        ## this is needed e.g. for truncated families
+        dfun2 <- paste("d", x, sep = "")
+        pdf <- try(eval(parse(text = dfun2)), silent = TRUE)
+        if (inherits(pdf, "try-error"))
+            stop(sQuote(dfun2), " and ", sQuote(dfun), " do not exist.")
+    }
+    return(pdf)
 }
 
 ## return mean or (first) modus of a vector depending on its class
@@ -118,3 +154,31 @@ myApply <- function(X, FUN, ...) {
 }
 
 
+## helper function that stabilizes the negative gradient if requested by the user
+stabilize_ngradient <- function(ngr, w = 1, stabilization) {
+    ## set which to MAD if gamboostLSS_stab_ngrad = TRUE and which == "none"
+    if (stabilization == "none" && getOption("gamboostLSS_stab_ngrad"))
+        stabilization <- "MAD"
+    ## stabilization using the mean absolute deviation (MAD)
+    if (stabilization == "MAD") {
+        div <- weighted.median(abs(ngr - weighted.median(ngr, w = w, na.rm = TRUE)),
+                               w = w, na.rm = TRUE)
+        div <- ifelse(div < 0.0001, 0.0001, div)
+        ngr <- ngr / div
+    }
+    ngr
+}
+
+
+check_stabilization <- function(stabilization = c("none", "MAD")) {
+    stabilization <- match.arg(stabilization)
+    ## check if old stabilization interface is used and issue a warning
+    if (getOption("gamboostLSS_stab_ngrad")) {
+        warning("Usage of ", sQuote("options(gamboostLSS_stab_ngrad = TRUE)"),
+                " is deprecated.\n", "Use argument ", sQuote("stabilization"),
+                " in the fitting family. See ?Families for details.")
+        if (stabilization == "none")
+           warning(sQuote("stabilization"), " is set to ", dQuote("MAD"))
+    }
+    stabilization
+}

@@ -16,7 +16,8 @@ gamlss.Families <- function(...)
     as.families(...)
 
 as.families <- function(fname = "NO",
-                        mu = NULL, sigma = NULL, nu = NULL, tau = NULL) {
+                        mu = NULL, sigma = NULL, nu = NULL, tau = NULL,
+                        stabilization = c("none", "MAD")) {
 
     ## require gamlss.dist
     if (!requireNamespace("gamlss.dist", quietly = TRUE))
@@ -35,22 +36,28 @@ as.families <- function(fname = "NO",
     if (inherits(gamlss.fam, "try-error"))
         stop(sQuote("fname"), " specifies no valid gamlss family")
 
+    stabilization <- check_stabilization(stabilization)
+
     npar <- gamlss.fam$nopar
     switch(npar, {
         ## 1 parameter
         fun <- gamlss1parMu(mu = mu, fname = fname)
         warning("For boosting one-parametric families,",
                 " please use the mboost package.")
+        if (stabilization != "none")
+            warning("Stabilization is ignored for one-parametric families.")
     }, {
         ## 2 parameters
-        fun <- gamlss2parFam(mu = mu, sigma = sigma, fname = fname)
+        fun <- gamlss2parFam(mu = mu, sigma = sigma,
+                             stabilization = stabilization, fname = fname)
     }, {
         ## 3 parameters
-        fun <- gamlss3parFam(mu = mu, sigma = sigma, nu = nu, fname = fname)
+        fun <- gamlss3parFam(mu = mu, sigma = sigma, nu = nu,
+                             stabilization = stabilization, fname = fname)
     }, {
         ## 4 parameters
         fun <- gamlss4parFam(mu = mu, sigma = sigma, nu = nu, tau = tau,
-                             fname = fname)
+                             stabilization = stabilization, fname = fname)
     })
     fun
 }
@@ -101,12 +108,12 @@ gamlss1parMu <- function(mu = NULL, fname = "EXP") {
 ################################################################################
 ## 2 parameters
 
-gamlss2parMu <- function(mu = NULL, sigma = NULL, fname = "NO") {
+gamlss2parMu <- function(mu = NULL, sigma = NULL,
+                         stabilization, fname = "NO") {
 
     FAM <- gamlss.dist::as.gamlss.family(fname)
     NAMEofFAMILY <- FAM$family
-    dfun <- paste("gamlss.dist::d", fname, sep = "")
-    pdf <- eval(parse(text = dfun))
+    pdf <- get_pdf(fname)
 
     ## get the loss
     loss <- function(y, f, sigma, w = 1) {
@@ -122,11 +129,7 @@ gamlss2parMu <- function(mu = NULL, sigma = NULL, fname = "NO") {
     ## we need dl/deta = dl/dmu*dmu/deta
     ngradient <- function(y, f, w = 1) {
         ngr <-  FAM$dldm(y = y, mu = FAM$mu.linkinv(f), sigma = sigma) * FAM$mu.dr(eta = f)
-        if (getOption("gamboostLSS_stab_ngrad")) {
-            div <- median(abs(ngr - median(ngr, na.rm=TRUE)), na.rm=TRUE)
-            div <- ifelse(div < 0.0001, 0.0001, div)
-            ngr <- ngr / div
-        }
+        ngr <- stabilize_ngradient(ngr, w = w, stabilization)
         ngr
     }
 
@@ -146,11 +149,11 @@ gamlss2parMu <- function(mu = NULL, sigma = NULL, fname = "NO") {
 }
 
 
-gamlss2parSigma <- function(mu = NULL, sigma = NULL, fname = "NO") {
+gamlss2parSigma <- function(mu = NULL, sigma = NULL,
+                            stabilization, fname = "NO") {
     FAM <- gamlss.dist::as.gamlss.family(fname)
     NAMEofFAMILY <- FAM$family
-    dfun <- paste("gamlss.dist::d", fname, sep = "")
-    pdf <- eval(parse(text = dfun))
+    pdf <- get_pdf(fname)
 
     ## get the loss
     loss <- function(y, f, w = 1, mu) {
@@ -165,11 +168,7 @@ gamlss2parSigma <- function(mu = NULL, sigma = NULL, fname = "NO") {
     ## we need dl/deta = dl/dsigma*dsigma/deta
     ngradient <- function(y, f, w = 1) {
         ngr <- FAM$dldd(y = y, mu = mu, sigma = FAM$sigma.linkinv(f)) * FAM$sigma.dr(eta = f)
-        if (getOption("gamboostLSS_stab_ngrad")) {
-            div <- median(abs(ngr - median(ngr, na.rm=TRUE)), na.rm=TRUE)
-            div <- ifelse(div < 0.0001, 0.0001, div)
-            ngr <- ngr / div
-        }
+        ngr <- stabilize_ngradient(ngr, w = w, stabilization)
         ngr
     }
     ## get the offset
@@ -188,10 +187,10 @@ gamlss2parSigma <- function(mu = NULL, sigma = NULL, fname = "NO") {
 }
 
 ## Build the Families object
-gamlss2parFam <- function(mu = NULL, sigma = NULL, fname = "NO") {
-    Families(mu = gamlss2parMu(mu = mu, sigma = sigma, fname = fname),
-             sigma = gamlss2parSigma(mu = mu, sigma = sigma, fname = fname),
-             qfun = eval(parse(text=paste0("gamlss.dist::q", fname))),
+gamlss2parFam <- function(mu = NULL, sigma = NULL, stabilization, fname = "NO") {
+    Families(mu = gamlss2parMu(mu = mu, sigma = sigma, stabilization, fname = fname),
+             sigma = gamlss2parSigma(mu = mu, sigma = sigma, stabilization, fname = fname),
+             qfun = get_qfun(fname),
              name = fname)
 }
 
@@ -199,12 +198,12 @@ gamlss2parFam <- function(mu = NULL, sigma = NULL, fname = "NO") {
 ## 3 parameters
 
 ## sub-family for Mu
-gamlss3parMu <- function(mu = NULL, sigma = NULL, nu = NULL, fname = "TF") {
+gamlss3parMu <- function(mu = NULL, sigma = NULL, nu = NULL,
+                         stabilization, fname = "TF") {
 
     FAM <- gamlss.dist::as.gamlss.family(fname)
     NAMEofFAMILY <- FAM$family
-    dfun <- paste("gamlss.dist::d", fname, sep = "")
-    pdf <- eval(parse(text = dfun))
+    pdf <- get_pdf(fname)
 
     ## get the loss
     loss <- function(y, f, sigma, nu, w = 1) {
@@ -218,12 +217,12 @@ gamlss3parMu <- function(mu = NULL, sigma = NULL, nu = NULL, fname = "TF") {
     ## get the ngradient: mu is linkinv(f)
     ## we need dl/deta = dl/dmu*dmu/deta
     ngradient <- function(y, f, w = 1) {
-        ngr <- FAM$dldm(y = y, mu = FAM$mu.linkinv(f), sigma = sigma, nu = nu) * FAM$mu.dr(eta = f)
-        if (getOption("gamboostLSS_stab_ngrad")) {
-            div <- median(abs(ngr - median(ngr, na.rm=TRUE)), na.rm=TRUE)
-            div <- ifelse(div < 0.0001, 0.0001, div)
-            ngr <- ngr / div
+        if (FAM$type == "Mixed") {
+            ngr <- FAM$dldm(y = y, mu = FAM$mu.linkinv(f), sigma = sigma) * FAM$mu.dr(eta = f)
+        } else {
+            ngr <- FAM$dldm(y = y, mu = FAM$mu.linkinv(f), sigma = sigma, nu = nu) * FAM$mu.dr(eta = f)
         }
+        ngr <- stabilize_ngradient(ngr, w = w, stabilization)
         ngr
     }
 
@@ -243,11 +242,11 @@ gamlss3parMu <- function(mu = NULL, sigma = NULL, nu = NULL, fname = "TF") {
 }
 
 
-gamlss3parSigma <- function(mu = NULL, sigma = NULL, nu = NULL, fname = "TF") {
+gamlss3parSigma <- function(mu = NULL, sigma = NULL, nu = NULL,
+                            stabilization, fname = "TF") {
     FAM <- gamlss.dist::as.gamlss.family(fname)
     NAMEofFAMILY <- FAM$family
-    dfun <- paste("gamlss.dist::d", fname, sep = "")
-    pdf <- eval(parse(text = dfun))
+    pdf <- get_pdf(fname)
 
     ## get the loss
     loss <- function(y, f, w = 1, mu, nu) {
@@ -261,12 +260,12 @@ gamlss3parSigma <- function(mu = NULL, sigma = NULL, nu = NULL, fname = "TF") {
     ## get the ngradient: sigma is linkinv(f)
     ## we need dl/deta = dl/dsigma*dsigma/deta
     ngradient <- function(y, f, w = 1) {
-        ngr <- FAM$dldd(y = y, mu = mu, sigma = FAM$sigma.linkinv(f), nu = nu) * FAM$sigma.dr(eta = f)
-        if (getOption("gamboostLSS_stab_ngrad")) {
-            div <- median(abs(ngr - median(ngr, na.rm=TRUE)), na.rm=TRUE)
-            div <- ifelse(div < 0.0001, 0.0001, div)
-            ngr <- ngr / div
+        if (FAM$type == "Mixed") {
+            ngr <- FAM$dldd(y = y, mu = mu, sigma = FAM$sigma.linkinv(f))  * FAM$sigma.dr(eta = f)
+        } else {
+            ngr <- FAM$dldd(y = y, mu = mu, sigma = FAM$sigma.linkinv(f), nu = nu) * FAM$sigma.dr(eta = f)
         }
+        ngr <- stabilize_ngradient(ngr, w = w, stabilization)
         ngr
     }
     ## get the offset
@@ -284,11 +283,11 @@ gamlss3parSigma <- function(mu = NULL, sigma = NULL, nu = NULL, fname = "TF") {
            name = paste(FAM$family[2], "2nd parameter (sigma)"))
 }
 
-gamlss3parNu <- function(mu = NULL, sigma = NULL, nu = NULL, fname = "TF") {
+gamlss3parNu <- function(mu = NULL, sigma = NULL, nu = NULL,
+                         stabilization, fname = "TF") {
     FAM <- gamlss.dist::as.gamlss.family(fname)
     NAMEofFAMILY <- FAM$family
-    dfun <- paste("gamlss.dist::d", fname, sep = "")
-    pdf <- eval(parse(text = dfun))
+    pdf <- get_pdf(fname)
 
     ## get the loss
     loss <- function(y, f, w = 1, mu, sigma) {
@@ -302,12 +301,12 @@ gamlss3parNu <- function(mu = NULL, sigma = NULL, nu = NULL, fname = "TF") {
     ## get the ngradient: sigma is linkinv(f)
     ## we need dl/deta = dl/dsigma*dsigma/deta
     ngradient <- function(y, f, w = 1) {
-        ngr <- FAM$dldv(y = y, mu = mu, sigma = sigma, nu = FAM$nu.linkinv(f)) * FAM$nu.dr(eta = f)
-        if (getOption("gamboostLSS_stab_ngrad")) {
-            div <- median(abs(ngr - median(ngr, na.rm=TRUE)), na.rm=TRUE)
-            div <- ifelse(div < 0.0001, 0.0001, div)
-            ngr <- ngr / div
+        if (FAM$type == "Mixed") {
+            ngr <- FAM$dldv(y = y, nu = FAM$nu.linkinv(f)) * FAM$nu.dr(eta = f)
+        } else {
+            ngr <- FAM$dldv(y = y, mu = mu, sigma = sigma, nu = FAM$nu.linkinv(f)) * FAM$nu.dr(eta = f)
         }
+        ngr <- stabilize_ngradient(ngr, w = w, stabilization)
         ngr
     }
     ## get the offset
@@ -326,11 +325,11 @@ gamlss3parNu <- function(mu = NULL, sigma = NULL, nu = NULL, fname = "TF") {
 }
 
 ## Build the Families object
-gamlss3parFam <- function(mu = NULL, sigma = NULL, nu = NULL, fname = "TF") {
-    Families(mu = gamlss3parMu(mu = mu, sigma = sigma, nu = nu, fname = fname),
-             sigma = gamlss3parSigma(mu = mu, sigma = sigma, nu = nu, fname = fname),
-             nu = gamlss3parNu(mu = mu, sigma = sigma, nu = nu, fname = fname),
-             qfun = eval(parse(text=paste0("gamlss.dist::q", fname))),
+gamlss3parFam <- function(mu = NULL, sigma = NULL, nu = NULL, stabilization, fname = "TF") {
+    Families(mu = gamlss3parMu(mu = mu, sigma = sigma, nu = nu, stabilization, fname = fname),
+             sigma = gamlss3parSigma(mu = mu, sigma = sigma, nu = nu, stabilization, fname = fname),
+             nu = gamlss3parNu(mu = mu, sigma = sigma, nu = nu, stabilization, fname = fname),
+             qfun = get_qfun(fname),
              name = fname)
 }
 
@@ -339,12 +338,11 @@ gamlss3parFam <- function(mu = NULL, sigma = NULL, nu = NULL, fname = "TF") {
 ## 4 parameters
 
 gamlss4parMu <- function(mu = NULL, sigma = NULL, nu = NULL, tau = NULL,
-                         fname = "BCT") {
+                         stabilization, fname = "BCPE") {
 
     FAM <- gamlss.dist::as.gamlss.family(fname)
     NAMEofFAMILY <- FAM$family
-    dfun <- paste("gamlss.dist::d", fname, sep = "")
-    pdf <- eval(parse(text = dfun))
+    pdf <- get_pdf(fname)
 
     ## get the loss
     loss <- function(y, f, sigma, nu, tau, w = 1) {
@@ -359,11 +357,7 @@ gamlss4parMu <- function(mu = NULL, sigma = NULL, nu = NULL, tau = NULL,
     ngradient <- function(y, f, w = 1) {
         ngr <- FAM$dldm(y = y, mu = FAM$mu.linkinv(f), sigma = sigma, nu = nu, tau = tau) *
             FAM$mu.dr(eta = f)
-        if (getOption("gamboostLSS_stab_ngrad")) {
-            div <- median(abs(ngr - median(ngr, na.rm=TRUE)), na.rm=TRUE)
-            div <- ifelse(div < 0.0001, 0.0001, div)
-            ngr <- ngr / div
-        }
+        ngr <- stabilize_ngradient(ngr, w = w, stabilization)
         ngr
     }
     ## get the offset -> we take the starting values of gamlss
@@ -383,11 +377,10 @@ gamlss4parMu <- function(mu = NULL, sigma = NULL, nu = NULL, tau = NULL,
 
 
 gamlss4parSigma <- function(mu = NULL, sigma = NULL, nu = NULL, tau = NULL,
-                            fname = "BCPE") {
+                            stabilization, fname = "BCPE") {
     FAM <- gamlss.dist::as.gamlss.family(fname)
     NAMEofFAMILY <- FAM$family
-    dfun <- paste("gamlss.dist::d", fname, sep = "")
-    pdf <- eval(parse(text = dfun))
+    pdf <- get_pdf(fname)
 
     ## get the loss
     loss <- function(y, f, w = 1, mu, nu, tau) {
@@ -404,11 +397,7 @@ gamlss4parSigma <- function(mu = NULL, sigma = NULL, nu = NULL, tau = NULL,
     ngradient <- function(y, f, w = 1) {
         ngr <-  FAM$dldd(y = y, mu = mu, sigma = FAM$sigma.linkinv(f), nu = nu,
                          tau = tau) * FAM$sigma.dr(eta = f)
-        if (getOption("gamboostLSS_stab_ngrad")) {
-            div <- median(abs(ngr - median(ngr, na.rm=TRUE)), na.rm=TRUE)
-            div <- ifelse(div < 0.0001, 0.0001, div)
-            ngr <- ngr / div
-        }
+        ngr <- stabilize_ngradient(ngr, w = w, stabilization)
         ngr
     }
     ## get the offset
@@ -427,11 +416,10 @@ gamlss4parSigma <- function(mu = NULL, sigma = NULL, nu = NULL, tau = NULL,
 }
 
 gamlss4parNu <- function(mu = NULL, sigma = NULL, nu = NULL, tau = NULL,
-                         fname = "BCPE") {
+                         stabilization, fname = "BCPE") {
     FAM <- gamlss.dist::as.gamlss.family(fname)
     NAMEofFAMILY <- FAM$family
-    dfun <- paste("gamlss.dist::d", fname, sep = "")
-    pdf <- eval(parse(text = dfun))
+    pdf <- get_pdf(fname)
 
     ## get the loss
     loss <- function(y, f, w = 1, mu, sigma, tau) {
@@ -448,11 +436,7 @@ gamlss4parNu <- function(mu = NULL, sigma = NULL, nu = NULL, tau = NULL,
     ngradient <- function(y, f, w = 1) {
         ngr <- FAM$dldv(y = y, mu = mu, sigma = sigma, nu = FAM$nu.linkinv(f),
                         tau = tau) * FAM$nu.dr(eta = f)
-        if (getOption("gamboostLSS_stab_ngrad")) {
-            div <- median(abs(ngr - median(ngr, na.rm=TRUE)), na.rm=TRUE)
-            div <- ifelse(div < 0.0001, 0.0001, div)
-            ngr <- ngr / div
-        }
+        ngr <- stabilize_ngradient(ngr, w = w, stabilization)
         ngr
     }
     ## get the offset
@@ -473,11 +457,10 @@ gamlss4parNu <- function(mu = NULL, sigma = NULL, nu = NULL, tau = NULL,
 
 
 gamlss4parTau <- function(mu = NULL, sigma = NULL, nu = NULL, tau = NULL,
-                          fname = "BCPE") {
+                          stabilization, fname = "BCPE") {
     FAM <- gamlss.dist::as.gamlss.family(fname)
     NAMEofFAMILY <- FAM$family
-    dfun <- paste("gamlss.dist::d", fname, sep = "")
-    pdf <- eval(parse(text = dfun))
+    pdf <- get_pdf(fname)
 
     ## get the loss
     loss <- function(y, f, w = 1, mu, sigma, nu) {
@@ -493,11 +476,7 @@ gamlss4parTau <- function(mu = NULL, sigma = NULL, nu = NULL, tau = NULL,
     ngradient <- function(y, f, w = 1) {
         ngr <- FAM$dldt(y = y, mu = mu, sigma = sigma, tau = FAM$tau.linkinv(f),
                         nu = nu) * FAM$tau.dr(eta = f)
-        if (getOption("gamboostLSS_stab_ngrad")) {
-            div <- median(abs(ngr - median(ngr, na.rm=TRUE)), na.rm=TRUE)
-            div <- ifelse(div < 0.0001, 0.0001, div)
-            ngr <- ngr / div
-        }
+        ngr <- stabilize_ngradient(ngr, w = w, stabilization)
         ngr
     }
     ## get the offset
@@ -516,11 +495,11 @@ gamlss4parTau <- function(mu = NULL, sigma = NULL, nu = NULL, tau = NULL,
 }
 
 ## Build the Families object
-gamlss4parFam <- function(mu = NULL, sigma = NULL, nu = NULL, tau = NULL, fname = "BCPE") {
-    Families(mu = gamlss4parMu(mu = mu, sigma = sigma, nu = nu, tau = tau, fname = fname),
-             sigma = gamlss4parSigma(mu = mu, sigma = sigma, nu = nu, tau = tau, fname = fname),
-             nu = gamlss4parNu(mu = mu, sigma = sigma, nu = nu, tau = tau, fname = fname),
-             tau = gamlss4parTau(mu = mu, sigma = sigma, nu = nu, tau = tau, fname = fname),
-             qfun = eval(parse(text=paste0("gamlss.dist::q", fname))),
+gamlss4parFam <- function(mu = NULL, sigma = NULL, nu = NULL, tau = NULL, stabilization, fname = "BCPE") {
+    Families(mu = gamlss4parMu(mu = mu, sigma = sigma, nu = nu, tau = tau, stabilization, fname = fname),
+             sigma = gamlss4parSigma(mu = mu, sigma = sigma, nu = nu, tau = tau, stabilization, fname = fname),
+             nu = gamlss4parNu(mu = mu, sigma = sigma, nu = nu, tau = tau, stabilization, fname = fname),
+             tau = gamlss4parTau(mu = mu, sigma = sigma, nu = nu, tau = tau, stabilization, fname = fname),
+             qfun = get_qfun(fname),
              name = fname)
 }

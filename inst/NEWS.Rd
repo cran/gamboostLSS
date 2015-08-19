@@ -1,6 +1,45 @@
 \name{NEWS}
 \title{News for Package 'gamboostLSS'}
 
+\section{Changes in gamboostLSS version 1.2-0 (2015-08-19)}{
+  \subsection{User-visible changes}{
+    \itemize{
+      \item New interface: Stabilization of negative gradient is now
+      specified via families, e.g., \code{GaussianLSS(stabilization =
+	"MAD")}. Using \code{options(gamboostLSS_stab_ngrad = TRUE)} is
+      still supported for backward compatibility but discouraged.
+      \item Added \code{weighted.median} which is used in \code{"MAD"}
+      stabilization (see bugfixes).
+      \item Added preliminary version of the tutorial paper as vignette,
+      which is now available as \code{vignette("gamboostLSS_Tutorial",
+	package = "gamboostLSS")}.
+      \item Added \code{summary} function (request
+      \href{https://github.com/hofnerb/gamboostLSS/issues/2}{#2}).
+    }
+  }
+  \subsection{Miscellaneous}{
+    \itemize{
+      \item Added preliminary version of tutorial paper as reference.
+    }
+  }
+  \subsection{Bug-fixes}{
+    \itemize{
+      \item Improve stored \code{call}s (closes
+      \href{https://github.com/hofnerb/gamboostLSS/issues/3}{#3}).
+      \item Use \code{weighted.median} to compute MAD when negative
+      gradients are stabilized.
+      \item Fixed handling of \pkg{gamlss.dist} families with \code{type
+	= "Mixed"}.
+      \item Fixed a bug in \code{as.families} with truncated \code{families}
+      (which can be obtained using the package \pkg{gamlss.tr}).
+      \item The internal helper \code{get_qfun} is now a generic
+      function.
+      \item  Adhere to CRAN policies regarding import of base packages
+      (closes \href{https://github.com/hofnerb/gamboostLSS/issues/1}{#1}).
+    }
+  }
+}
+
 \section{Changes in gamboostLSS version 1.1-3 (2015-01-12)}{
   \subsection{Miscellaneous}{
     \itemize{
@@ -15,10 +54,10 @@
       \item Corrected \code{india} data set:\cr
       stunting ranged from -600 to 600 but should range from -6 to 6
       \item Fixed unstated dependencies
-      \item changed \code{require} to \code{requireNamespace}
+      \item Changed \code{require} to \code{requireNamespace}
       and added \code{gamlss.dist::} where necessary
-      \item fixed bug in \code{selected.mboostLSS}
-      \item \code{predict()} returned a vector insead of a matrix
+      \item Fixed bug in \code{selected.mboostLSS}
+      \item \code{predict()} returned a vector instead of a matrix
       \item \code{factor}s were coerced to \code{character}s in
       \code{predint()}
     }
@@ -70,7 +109,7 @@
        intervals
        \item added stabilization factor for negative gradients (MAD):
        turn on the stabilization by using\cr
-       \code{> options(gamboostLSS_stab_ngrad = TRUE)}
+       \code{options(gamboostLSS_stab_ngrad = TRUE)}
        \item added new data sets \code{india} and \code{india.bnd}
     }
   }

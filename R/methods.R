@@ -260,6 +260,42 @@ model.weights.default <- function(x, ...)
 model.weights.mboostLSS <- function(x, ...)
     attr(x, "(weights)")
 
+### summary function based on print.mboostLSS() and summary.mboost()
+summary.mboostLSS <- function(object, ...) {
+    cat("\n")
+    cat("\t LSS Models fitted via Model-based Boosting\n")
+    cat("\n")
+    if (!is.null(attr(object, "call")))
+        cat("Call:\n", deparse(attr(object, "call")), "\n\n", sep = "")
+    cat("Number of boosting iterations: mstop =", mstop(object), "\n")
+    cat("Step size: ", object[[1]]$control$nu, "\n\n")
+
+    cat("Families:\n")
+    lapply(object, function(xi) show(xi$family))
+
+    if (inherits(object, "glmboostLSS")) {
+        cat("Coefficients:\n")
+        cf <- coef(object, off2int = TRUE)
+        for (i in 1:length(cf)) {
+            cat("Parameter ", names(cf)[i], ":\n", sep = "")
+            print(cf[[i]])
+            cat("\n")
+        }
+    }
+
+    cat("Selection frequencies:\n")
+    for (i in 1:length(object)) {
+        cat("Parameter ", names(object)[i], ":\n", sep = "")
+        nm <- variable.names(object[[i]])
+        selprob <- tabulate(selected(object[[i]]), nbins = length(nm)) /
+            length(selected(object[[i]]))
+        names(selprob) <- names(nm)
+        selprob <- sort(selprob, decreasing = TRUE)
+        selprob <- selprob[selprob > 0]
+        print(selprob)
+    }
+    invisible(object)
+}
 
 ################################################################################
 ### helpers
@@ -284,3 +320,42 @@ weighted.sd <- function(x, w, ...) {
     var <- weighted.mean((x - m)^2, w, ...) * sum(w) / (sum(w) - 1)
     return(sqrt(var))
 }
+
+## weighted median
+weighted.median <- function (x, w = 1, na.rm = FALSE) {
+    if (length(w) == 1)
+        w <- rep(w, length(x))
+
+    ## remove observations with zero weights
+    x <- x[w != 0]
+    w <- w[w != 0]
+
+    ## remove NAs if na.rm = TRUE
+    if (na.rm) {
+        keep <- !is.na(x) & !is.na(w)
+        x <- x[keep]
+        w <- w[keep]
+    } else {
+        if (any(is.na(x)) | any(is.na(w)))
+            return(NA)
+    }
+
+    ## sort data and weights
+    ind <- order(x)
+    x <- x[ind]
+    w <- w[ind]
+
+    ## first time that fraction of weights is above 0.5
+    ind1 <- min(which(cumsum(w)/sum(w) > 0.5))
+
+    ## first time that fraction of weights is below 0.5
+    ind2 <- ifelse(ind1 == 1, 1, max(which(cumsum(w)/sum(w) <= 0.5)))
+
+    ## if sum of weights is an even integer
+    if(sum(w) %% 1 == 0 && sum(w) %% 2 == 0)
+        return(mean(c(x[ind1], x[ind2])))
+
+    ## else return
+    return(max(c(x[ind1], x[ind2])))
+}
+

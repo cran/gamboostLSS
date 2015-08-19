@@ -33,14 +33,10 @@
 }
 \usage{
 as.families(fname = "NO", mu = NULL, sigma = NULL,
-            nu = NULL, tau = NULL)
+            nu = NULL, tau = NULL, stabilization = c("none", "MAD"))
 
 ## a wrapper to as.families:
 gamlss.Families(...)
-
-#### Turn the stability correction on or off:
-## use options(gamboostLSS_stab_ngrad = TRUE)  ## on
-## or  options(gamboostLSS_stab_ngrad = FALSE) ## off
 }
 
 \arguments{
@@ -55,6 +51,10 @@ gamlss.Families(...)
   \item{sigma}{possible offset value for parameter \code{sigma}.}
   \item{nu}{possible offset value for parameter \code{nu}.}
   \item{tau}{possible offset value for parameter \code{tau}.}
+  \item{stabilization}{ governs if the negative gradient should be
+    standardized in each boosting step. It can be either "none" or
+    "MAD". For details see \code{\link{Families}}.
+  }
   \item{\ldots}{same arguments as above.}
 }
 \details{
@@ -83,8 +83,13 @@ gamlss.Families(...)
 
   For information on GAMLSS theory see Rigby and Stasinopoulos (2005),
   lists of available distributions are provided at
-  \url{http://gamlss.org}. For more on details boosting GAMLSS see Mayr et
-  al., 2012.
+  \url{http://gamlss.org}. For more on details boosting GAMLSS see Mayr
+  et al. (2012). Hofner et al. (2015) provides a worked example and more
+  details on \code{as.families}.
+
+  To (potentially) stabilize the model estimation by standardizing the
+  negative gradients one can use the argument \code{stabilization} of
+  the families. See \code{\link{Families}} for details.
 }
 
 \author{
@@ -99,6 +104,12 @@ gamlss.Families(...)
 }
 
 \references{
+
+  B. Hofner, A. Mayr, M. Schmid (2015). gamboostLSS: An R Package for
+  Model Building and Variable Selection in the GAMLSS Framework.
+  Journal of Statistical Software. Accepted for publication.
+
+  Available as \code{vignette("gamboostLSS_Tutorial")}.
 
   Mayr, A., Fenske, N., Hofner, B., Kneib, T. and Schmid, M. (2012):
   Generalized additive models for location, scale and shape for

@@ -1,5 +1,13 @@
-import(mboost)
-import(parallel)
+import("mboost")
+import("parallel")
+
+importFrom("graphics", "axis", "box", "lines", "plot", "points")
+importFrom("grDevices", "grey", "rgb")
+importFrom("stats", "coef", "dlogis", "dnorm", "fitted", "median", "optimize",
+           "plogis", "pnorm", "predict", "qlnorm", "qlogis", "qnorm", "qt",
+           "qweibull", "rmultinom", "update", "var", "variable.names", "weighted.mean")
+importFrom("utils", "tail")
+
 
 export(glmboostLSS,
        gamboostLSS,
@@ -23,12 +31,14 @@ export(glmboostLSS,
        gamlss1parMu,
        gamlss2parMu, gamlss2parSigma,
        gamlss3parMu, gamlss3parSigma, gamlss3parNu,
-       gamlss4parMu, gamlss4parSigma, gamlss4parNu, gamlss4parTau)
+       gamlss4parMu, gamlss4parSigma, gamlss4parNu, gamlss4parTau,
+       weighted.median)
 
 S3method("[", mboostLSS)
 S3method(print, mboostLSS)
 S3method(selected, mboostLSS)
 S3method(risk, mboostLSS)
+S3method(summary, mboostLSS)
 
 S3method(mstop, oobag)
 S3method(mstop, mboostLSS)
@@ -53,3 +63,6 @@ S3method(fitted, mboostLSS)
 S3method(predict, mboostLSS)
 
 S3method(update, mboostLSS)
+
+S3method(get_qfun, mboostLSS)
+S3method(get_qfun, character)

@@ -36,12 +36,13 @@
 \alias{LogLogMu}
 \alias{LogLogSigma}
 
-\alias{LogLogLSS}
-\alias{LogLogMu}
-\alias{LogLogSigma}
-
 \alias{ZIPoLSS}
 \alias{ZINBLSS}
+
+\alias{options}
+\alias{stab_ngrad}
+\alias{stabilize_ngrad}
+\alias{stabilize_ngradient}
 
 \title{
   Families for GAMLSS models
@@ -60,47 +61,57 @@
 # Families for continuous response
 
 # Gaussian distribution
-GaussianLSS(mu = NULL, sigma = NULL)
+GaussianLSS(mu = NULL, sigma = NULL,
+            stabilization = c("none", "MAD"))
 
 # Student's t-distribution
-StudentTLSS(mu = NULL, sigma = NULL, df = NULL)
+StudentTLSS(mu = NULL, sigma = NULL, df = NULL,
+            stabilization = c("none", "MAD"))
 
 ############################################################
 # Families for continuous non-negative response
 
 # Gamma distribution
-GammaLSS(mu = NULL, sigma = NULL)
+GammaLSS(mu = NULL, sigma = NULL,
+         stabilization = c("none", "MAD"))
 
 ############################################################
 # Families for fractions and bounded continuous response
 
 # Beta distribution
-BetaLSS(mu = NULL, phi = NULL)
+BetaLSS(mu = NULL, phi = NULL,
+        stabilization = c("none", "MAD"))
 
 ############################################################
 # Families for count data
 
 # Negative binomial distribution
-NBinomialLSS(mu = NULL, sigma = NULL)
+NBinomialLSS(mu = NULL, sigma = NULL,
+             stabilization = c("none", "MAD"))
 
 # Zero-inflated Poisson distribution
-ZIPoLSS(mu = NULL, sigma = NULL)
+ZIPoLSS(mu = NULL, sigma = NULL,
+        stabilization = c("none", "MAD"))
 
 # Zero-inflated negative binomial distribution
-ZINBLSS(mu = NULL, sigma = NULL, nu = NULL)
+ZINBLSS(mu = NULL, sigma = NULL, nu = NULL,
+        stabilization = c("none", "MAD"))
 
 ############################################################
 # Families for survival models (accelerated failure time
 # models) for data with right censoring
 
 # Log-normal distribution
-LogNormalLSS(mu = NULL, sigma = NULL)
+LogNormalLSS(mu = NULL, sigma = NULL,
+             stabilization = c("none", "MAD"))
 
 # Log-logistic distribution
-LogLogLSS(mu = NULL, sigma = NULL)
+LogLogLSS(mu = NULL, sigma = NULL,
+          stabilization = c("none", "MAD"))
 
 # Weibull distribution
-WeibullLSS(mu = NULL, sigma = NULL)
+WeibullLSS(mu = NULL, sigma = NULL,
+           stabilization = c("none", "MAD"))
 
 ############################################################
 # Constructor function for new GAMLSS distributions
@@ -118,6 +129,10 @@ Families(..., qfun = NULL, name = NULL)
   \item{phi}{ offset value for phi. }
   \item{df}{ offset value for df. }
   \item{nu}{ offset value for nu. }
+  \item{stabilization}{ governs if the negative gradient should be
+    standardized in each boosting step. It can be either "none" or
+    "MAD". See also Details below.
+  }
 }
 \details{
 
@@ -163,6 +178,14 @@ Families(..., qfun = NULL, name = NULL)
   for both paramters, only \code{ngradient} differs. Both sub-families
   are passed to the \code{Families} constructor, which returns an object
   of the class \code{families}.
+
+  To (potentially) stabilize the model estimation by standardizing the
+  negative gradients one can use the argument \code{stabilization} of
+  the families. If \code{stabilization = "MAD"}, the negative gradient
+  is divided by its (weighted) median absolute deviation \deqn{median_i
+  (|u_{k,i} - median_j(u_{k,j})|)} in each boosting step. See Hofner et
+  al. (2015) for details.
+
 }
 \value{
   An object of class \code{families}.
@@ -174,6 +197,12 @@ Families(..., qfun = NULL, name = NULL)
 }
 
 \references{
+  B. Hofner, A. Mayr, M. Schmid (2015). gamboostLSS: An R Package for
+  Model Building and Variable Selection in the GAMLSS Framework.
+  Journal of Statistical Software. Accepted for publication.
+
+  Available as \code{vignette("gamboostLSS_Tutorial")}.
+
   Mayr, A., Fenske, N., Hofner, B., Kneib, T. and Schmid, M. (2012):
   Generalized additive models for location, scale and shape for
   high-dimensional data - a flexible approach based on boosting. Journal
@@ -258,7 +287,8 @@ newStudentTDf <- function(mu, df){
 newStudentT <- Families(mu= newStudentTMu(mu=mu, df=df),
                         df=newStudentTDf(mu=mu, df=df))
 
-\donttest{### usage of the new Student's t distribution:
+\donttest{### Do not test the following code per default on CRAN as it takes some time to run:
+### usage of the new Student's t distribution:
 library(gamlss)   ## required for rTF
 set.seed(1907)
 n <- 5000
@@ -267,20 +297,20 @@ x2 <- runif(n)
 mu <- 2 -1*x1 - 3*x2
 df <- exp(1 + 0.5*x1 )
 y <- rTF(n = n, mu = mu, nu = df)
- 
+
 ## model fitting
 model <- glmboostLSS(y ~ x1 + x2, families = newStudentT,
                      control = boost_control(mstop = 100),
                      center = TRUE)
 ## shrinked effect estimates
 coef(model, off2int = TRUE)
- 
+
 ## compare to pre-defined three parametric t-distribution:
 model2 <- glmboostLSS(y ~ x1 + x2, families = StudentTLSS(),
                       control = boost_control(mstop = 100),
                       center = TRUE)
 coef(model2, off2int = TRUE)
- 
+
 ## with effect on sigma:
 sigma <- 3+ 1*x2
 y <- rTF(n = n, mu = mu, nu = df, sigma=sigma)
