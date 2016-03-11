@@ -8,7 +8,6 @@ importFrom("stats", "coef", "dlogis", "dnorm", "fitted", "median", "optimize",
            "qweibull", "rmultinom", "update", "var", "variable.names", "weighted.mean")
 importFrom("utils", "tail")
 
-
 export(glmboostLSS,
        gamboostLSS,
        blackboostLSS,
@@ -32,7 +31,7 @@ export(glmboostLSS,
        gamlss2parMu, gamlss2parSigma,
        gamlss3parMu, gamlss3parSigma, gamlss3parNu,
        gamlss4parMu, gamlss4parSigma, gamlss4parNu, gamlss4parTau,
-       weighted.median)
+       weighted.median, gamboostLSS_intern)
 
 S3method("[", mboostLSS)
 S3method(print, mboostLSS)
