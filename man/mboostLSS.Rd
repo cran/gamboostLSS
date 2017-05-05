@@ -10,25 +10,34 @@
 }
 \description{
   Functions for fitting GAMLSS (generalized additive models for
-  location, scale and shape) using boosting techniques. The algorithm
+  location, scale and shape) using boosting techniques. 
+  Two algorithms are implemented: (a) The cyclic algorithm
   iteratively rotates between the distribution parameters, updating one while using
   the current fits of the others as offsets (for details see Mayr et
-  al., 2012).
+  al., 2012). 
+  (b) The noncyclic algorithm selects in each step the update of a base-learner 
+  for the distribution parameter that best fits the negative gradient 
+  (algorithm with inner loss of Thomas et al., 2017). 
+  
 }
 \usage{
 mboostLSS(formula, data = list(), families = GaussianLSS(),
-          control = boost_control(), weights = NULL, ...)
+          control = boost_control(), weights = NULL, 
+          method = c("cyclic", "noncyclic"), ...)
 glmboostLSS(formula, data = list(), families = GaussianLSS(),
-            control = boost_control(), weights = NULL, ...)
+            control = boost_control(), weights = NULL, 
+            method = c("cyclic", "noncyclic"), ...)
 gamboostLSS(formula, data = list(), families = GaussianLSS(),
-            control = boost_control(), weights = NULL, ...)
+            control = boost_control(), weights = NULL, 
+            method = c("cyclic", "noncyclic"), ...)
 blackboostLSS(formula, data = list(), families = GaussianLSS(),
-              control = boost_control(), weights = NULL, ...)
+              control = boost_control(), weights = NULL,
+              method = c("cyclic", "noncyclic"), ...)
 
 ## fit function:
 mboostLSS_fit(formula, data = list(), families = GaussianLSS(),
               control = boost_control(), weights = NULL,
-              fun = mboost, funchar = "mboost", call = NULL, ...)
+              fun = mboost, funchar = "mboost", call = NULL, method, ...)
 }
 
 \arguments{
@@ -46,6 +55,10 @@ mboostLSS_fit(formula, data = list(), families = GaussianLSS(),
   \item{control}{ a list of parameters controlling the algorithm. For
     more details see \code{\link{boost_control}}. }
   \item{weights}{ a numeric vector of weights (optional). }
+  \item{method}{ fitting method, currently two methods are supported:
+  \code{"cyclic"} (see Mayr et al., 2012) and \code{"noncyclic"} 
+   (algorithm with inner loss of Thomas et al., 2017). 
+  The latter requires a one dimensional \code{mstop} value.}
   \item{fun}{ fit function. Either \code{\link{mboost}},
     \code{\link{glmboost}}, \code{\link{gamboost}} or
     \code{\link{blackboost}}. Specified directly via the corresponding LSS
@@ -67,7 +80,10 @@ mboostLSS_fit(formula, data = list(), families = GaussianLSS(),
 
   For information on GAMLSS theory see Rigby and Stasinopoulos (2005) or
   the information provided at \url{http://gamlss.org}. For a tutorial on
-  \code{\link{gamboostLSS}} see Hofner et al. (2016).
+  \code{\link{gamboostLSS}} see Hofner et al. (2016). Thomas et al. (2017) 
+  developed a novel non-cyclic approach to fit gamboostLSS models. This approach
+  is suitable for the combination with \code{\link{stabsel}} and speeds up
+  model tuning via \code{\link{cvrisk}} (see also below).
 
   \code{glmboostLSS} uses \code{\link[mboost]{glmboost}} to fit the
   distribution parameters of a GAMLSS -- a linear boosting model is
@@ -78,7 +94,7 @@ mboostLSS_fit(formula, data = list(), families = GaussianLSS(),
   default with smooth effects) is fitted for each parameter. With the
   \code{formula} argument, a wide range of different base-learners can
   be specified (see \code{\link[mboost]{baselearners}}). The
-  base-learners inply the type of effect each covariate has on the
+  base-learners imply the type of effect each covariate has on the
   corresponding distribution parameter.
 
   \code{mboostLSS} uses \code{\link[mboost]{mboost}} to fit the
@@ -93,14 +109,15 @@ mboostLSS_fit(formula, data = list(), families = GaussianLSS(),
   \code{blackboostLSS} all call \code{mboostLSS_fit} while \code{fun} is
   the corresponding \code{\link{mboost}} function, i.e., the same
   function without \code{LSS}. For further possible arguments see
-  these functions as well as \code{\link{mboost_fit}}.
+  these functions as well as \code{\link{mboost_fit}}. 
+  Note that \code{mboostLSS_fit} is usually not called directly by the user. 
 
-  In all four fitting functions it is possible to specify one or
+  For \code{method = "cyclic"} it is possible to specify one or
   multiple \code{mstop} and \code{nu} values via
   \code{\link{boost_control}}. In the case of one single value, this
   value is used for all distribution parameters of the GAMLSS model.
   Alternatively, a (named) vector or a (named) list with separate values
-  for each component can be used to specify a seperate value for each
+  for each component can be used to specify a separate value for each
   parameter of the GAMLSS model. The names of the list must correspond
   to the names of the distribution parameters of the GAMLSS family. If
   no names are given, the order of the \code{mstop} or \code{nu} values
@@ -108,7 +125,14 @@ mboostLSS_fit(formula, data = list(), families = GaussianLSS(),
   \code{families}. For one-dimensional stopping, the user therefore can
   specify, e.g., \code{mstop = 100} via \code{\link{boost_control}}. For
   more-dimensional stopping, one can specify, e.g., \code{mstop =
-    list(mu = 100, sigma = 200)} (see examples).
+  list(mu = 100, sigma = 200)} (see examples).
+
+  If \code{method} is set to \code{"noncyclic"}, \code{mstop} has
+  to be a one dimensional integer. Instead of cycling through all distribution 
+  parameters, in each iteration only the best base-learner is used. One base-learner of every 
+  parameter is selected via RSS, the distribution parameter is then chosen via the loss 
+  (in Thomas et. al. (2017) called inner loss). 
+  For details on the noncyclic fitting method see Thomas et. al. (2017). 
 
   To (potentially) stabilize the model estimation by standardizing the
   negative gradients one can use the argument \code{stabilization} of
@@ -117,7 +141,8 @@ mboostLSS_fit(formula, data = list(), families = GaussianLSS(),
 }
 \value{
   An object of class \code{mboostLSS} with corresponding methods to
-  extract information.
+  extract information. A \code{mboostLSS} model object is a named list 
+  with one list entry for each modelled distribution parameter. 
 }
 \references{
 B. Hofner, A. Mayr, M. Schmid (2016). gamboostLSS: An R Package for
@@ -142,6 +167,12 @@ Statistical Society, Series C (Applied Statistics), 54, 507-554.
 
 Buehlmann, P. and Hothorn, T. (2007), Boosting algorithms: Regularization,
 prediction and model fitting. Statistical Science, 22(4), 477--505.
+
+Thomas, J., Mayr, A., Bischl, B., Schmid, M., Smith, A., and Hofner, B. (2017), 
+Gradient boosting for distributional regression - faster tuning and improved 
+variable selection via noncyclical updates. 
+Accepted for publication in \emph{Statistics and Computing}.\cr
+Preliminary version: \url{http://arxiv.org/abs/1611.10171}.
 }
 
 \seealso{

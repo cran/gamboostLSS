@@ -1,5 +1,5 @@
 ### R code from vignette source 'gamboostLSS_Tutorial.Rnw'
-### Encoding: UTF-8
+### Encoding: ISO8859-1
 
 ###################################################
 ### code chunk number 1: init
@@ -20,7 +20,7 @@ if (all(is.na(pd))){
 
 ## for the exact reproduction of the plots R2BayesX >= 0.3.2 is needed
 suppressWarnings(if (!require("R2BayesX"))
-                     install.packages("R2BayesX"))
+                     install.packages("R2BayesX", repos = repos))
 
 ## remove (possibly) altered versions of "india" from working environment
 suppressWarnings(rm("india"))
@@ -371,27 +371,42 @@ legend("topleft", legend = c("mstop = c(mu = 30, sigma = 15)", "mstop = c(mu = 3
 
 
 ###################################################
-### code chunk number 36: subset (eval = FALSE)
+### code chunk number 36: crossvalidation (eval = FALSE)
+###################################################
+## plot(cvr)
+
+
+###################################################
+### code chunk number 37: check_initial_assignement (eval = FALSE)
+###################################################
+## ## for the purpose of the tutorial we started already with the optimal number of
+## ## boosting steps. Check if this is really true:
+## if (!isTRUE(all.equal(mstop(mod), mstop(cvr))))
+##     warning("Check mstop(mod) throughout the manuscript.")
+
+
+###################################################
+### code chunk number 38: subset (eval = FALSE)
 ###################################################
 ## mstop(mod) <- mstop(cvr)
 
 
 ###################################################
-### code chunk number 37: effects
+### code chunk number 39: effects
 ###################################################
 par(mfrow = c(2, 5))
 plot(mod)
 
 
 ###################################################
-### code chunk number 38: smooth_effects_code (eval = FALSE)
+### code chunk number 40: smooth_effects_code (eval = FALSE)
 ###################################################
 ## par(mfrow = c(2, 4), mar = c(5.1, 4.5, 4.1, 1.1))
 ## plot(mod, which = "bbs", type = "l")
 
 
 ###################################################
-### code chunk number 39: smooth_effects
+### code chunk number 41: smooth_effects
 ###################################################
 par(cex.axis = 1.3, cex.lab = 1.3, mar = c(4, 5, 2, 1))
 par(mfrow = c(2, 4), mar = c(5.1, 4.5, 4.1, 1.1))
@@ -399,19 +414,19 @@ plot(mod, which = "bbs", type = "l")
 
 
 ###################################################
-### code chunk number 40: smooth_effects_2
+### code chunk number 42: smooth_effects_2
 ###################################################
 plot(mod, which = "bbs", parameter = "mu")
 
 
 ###################################################
-### code chunk number 41: smooth_effects_3
+### code chunk number 43: smooth_effects_3
 ###################################################
 plot(mod, which = 1:4, parameter = 1)
 
 
 ###################################################
-### code chunk number 42: marginal_prediction_plot_code
+### code chunk number 44: marginal_prediction_plot_code
 ###################################################
 plot(predint(mod, pi = c(0.8, 0.9), which = "cbmi"),
      lty = 1:3, lwd = 3, xlab =  "BMI (child)",
@@ -419,14 +434,14 @@ plot(predint(mod, pi = c(0.8, 0.9), which = "cbmi"),
 
 
 ###################################################
-### code chunk number 43: greater_mumbai
+### code chunk number 45: greater_mumbai
 ###################################################
 points(stunting ~ cbmi, data = india, pch = 20,
        col = rgb(1, 0, 0, 0.5), subset = mcdist == "381")
 
 
 ###################################################
-### code chunk number 44: marginal_prediction_plot
+### code chunk number 46: marginal_prediction_plot
 ###################################################
 plot(predint(mod, pi = c(0.8, 0.9), which = "cbmi"),
      lty = 1:3, lwd = 3, xlab =  "BMI (child)",
@@ -436,7 +451,7 @@ points(stunting ~ cbmi, data = india, pch = 20,
 
 
 ###################################################
-### code chunk number 45: spatial_effects_code1 (eval = FALSE)
+### code chunk number 47: spatial_effects_code1 (eval = FALSE)
 ###################################################
 ## fitted_mu <- fitted(mod, parameter = "mu", which = "mcdist",
 ##                     type = "response")
@@ -445,7 +460,7 @@ points(stunting ~ cbmi, data = india, pch = 20,
 
 
 ###################################################
-### code chunk number 46: spatial_effects_code2 (eval = FALSE)
+### code chunk number 48: spatial_effects_code2 (eval = FALSE)
 ###################################################
 ## fitted_mu <- tapply(fitted_mu, india$mcdist, FUN = mean)
 ## fitted_sigma <- tapply(fitted_sigma, india$mcdist, FUN = mean)
@@ -459,7 +474,7 @@ points(stunting ~ cbmi, data = india, pch = 20,
 
 
 ###################################################
-### code chunk number 47: spatial_effects
+### code chunk number 49: spatial_effects
 ###################################################
 fitted_mu <- fitted(mod, parameter = "mu", which = "mcdist",
                     type = "response")

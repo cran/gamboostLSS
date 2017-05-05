@@ -1,8 +1,10 @@
 \name{cvrisk.mboostLSS}
 \alias{cvrisk}
 \alias{cvrisk.mboostLSS}
+\alias{cvrisk.nc_mboostLSS}
 \alias{make.grid}
 \alias{plot.cvriskLSS}
+\alias{plot.nc_cvriskLSS}
 
 \title{ Cross-Validation }
 \description{
@@ -20,6 +22,10 @@ make.grid(max, length.out = 10, min = NULL, log = TRUE,
 \method{plot}{cvriskLSS}(x, type = c("heatmap", "lines"),
      xlab = NULL, ylab = NULL, ylim = range(x),
      main = attr(x, "type"), ...)
+     
+\method{plot}{nc_cvriskLSS}(x, type = "lines",
+     xlab = "Number of boosting iterations", ylab = NULL,
+     ylim = range(x), main = attr(x, "type"), ...)
 }
 
 \arguments{
@@ -34,10 +40,15 @@ make.grid(max, length.out = 10, min = NULL, log = TRUE,
     bootstrap samples.
   }
   \item{grid}{
-    a matrix of stopping parameters the empirical risk is to be
-    evaluated for. Each row represents a parameter combination. The
-    number of columns must be equal to the number of parameters of the
-    GAMLSS family. Per default, \code{make.grid(mstop(object))} is used.
+    If the model was fitted with \code{method = "cyclic"}, grid is
+    a matrix of stopping parameters the empirical risk is to be evaluated for. 
+    Each row represents a parameter combination. The number of columns must be 
+    equal to the number of parameters of the GAMLSS family. Per default, 
+    \code{make.grid(mstop(object))} is used.
+    
+    Otherwise (i.e., for \code{method = "noncyclic"}) grid
+    is a vector of mstop values. Per default all steps up to the intial stopping 
+    iteration, i.e., \code{1:mstop(object)} are used.
   }
   \item{papply}{
     (parallel) apply function, defaults to  \code{\link[parallel]{mclapply}}.
@@ -120,10 +131,13 @@ make.grid(max, length.out = 10, min = NULL, log = TRUE,
   additionally shows information on the variability of the risk from
   fold to fold. The heatmap shows only the average risk but in a nicer
   fashion.
+  
+  For the \code{method = "noncyclic"} only the line plot for exists.
 
   Hofner et al. (2016) provide a detailed description of
   cross-validation for \code{\link{gamboostLSS}} models and show a
-  worked example.
+  worked example. Thomas et al. (2017) compare cross-validation for the
+  the cyclic and non-cyclic boosting approach and provide worked examples.
 }
 \value{
   An object of class \code{cvriskLSS} (when \code{fun} wasn't
@@ -137,6 +151,12 @@ make.grid(max, length.out = 10, min = NULL, log = TRUE,
   Journal of Statistical Software, 74(1), 1-31.
 
   Available as \code{vignette("gamboostLSS_Tutorial")}.
+  
+  Thomas, J., Mayr, A., Bischl, B., Schmid, M., Smith, A., and Hofner, B. (2017), 
+  Gradient boosting for distributional regression - faster tuning and improved 
+  variable selection via noncyclical updates. 
+  Accepted for publication in \emph{Statistics and Computing}.\cr
+  Preliminary version: \url{http://arxiv.org/abs/1611.10171}.
 }
 \seealso{
   \code{\link{cvrisk.mboost}} and \code{\link{cv}} (both in package

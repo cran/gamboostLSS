@@ -1,11 +1,11 @@
 ## helper functions
 
 check <- function(what, what_char, names) {
-
+    
     errormsg <- paste0(sQuote(what_char), " can be either a scalar, a (named) vector or a (named) list",
-                      " of ", what_char, " values with same names as ",  sQuote("families"), "in ",
-                      sQuote("boost_control"))
-
+                       " of ", what_char, " values with same names as ",  sQuote("families"), "in ",
+                       sQuote("boost_control"))
+    
     if (is.list(what)) {
         if (is.null(names(what)) && length(what) == length(names))
             names(what) <- names
@@ -28,7 +28,7 @@ check <- function(what, what_char, names) {
             what <- what[names] ## sort in order of families
         }
     }
-
+    
     return(what)
 }
 
@@ -41,7 +41,7 @@ get_data <- function(x, which = NULL) {
         data <- try(sapply(which, get, env = parent.frame(2)),
                     silent = TRUE)
         if (inherits(data, "try-error"))
-                stop("No data set found.")
+            stop("No data set found.")
         data <- as.data.frame(data)
     }
     return(data)
@@ -119,30 +119,45 @@ rescale_weights <- function(w) {
 
 ## helper function in a modified version based on mboost_2.2-3
 ## print trace of boosting iterations
-do_trace <- function(current, mstart, risk,
-                     linebreak = options("width")$width / 2, mstop = 1000) {
-    current <- current - mstart
+do_trace <- function(current, risk, mstart,
+                     linebreak = round(options("width")$width / 2), mstop = 1000) {
+    
+    current <- current - mstart  
+  
     if (current != mstop) {
-        if ((current - 1) %/% linebreak == (current - 1) / linebreak) {
+        if (current %% linebreak == 1) {
             mchr <- formatC(current + mstart, format = "d",
                             width = nchar(mstop) + 1, big.mark = "'")
             cat(paste("[", mchr, "] ",sep = ""))
-        } else {
-            if ((current %/% linebreak != current / linebreak)) {
-                cat(".")
-            } else {
-                cat(" -- risk:", risk[current + mstart], "\n")
-            }
+        }
+        cat(".")
+        if (current %% linebreak == 0) {
+          cat(" -- risk:", risk[current + mstart], "\n")
         }
     } else {
         cat("\nFinal risk:", risk[current + mstart], "\n")
     }
 }
 
-## helper function copied from mboost_2.2-3
-### check measurement scale of response for some losses
-check_y_family <- function(y, family)
-    family@check_y(y)
+## helper function copied from mboost_2.2-3; changed for gamboostLSS 
+## check measurement scale of response for some losses
+check_y_family <- function(y, family, allow_matrix = FALSE){
+  
+  if(is.null(dim((y)))) allow_matrix <- FALSE 
+  
+  if(!allow_matrix){
+    
+    return(family@check_y(y)) ## check response as it is
+    
+  }else{
+    
+    tmp <- family@check_y(as.vector(y)) ## convert matrix to vector for check
+    y <- matrix(tmp, ncol = ncol(y), nrow = nrow(y)) ## convert back to matrix 
+    return(y)
+  }
+  
+}
+  
 
 ################################################################################
 # sapply function that differentiates between data.frames and (numeric) vectors
@@ -166,11 +181,17 @@ stabilize_ngradient <- function(ngr, w = 1, stabilization) {
         div <- ifelse(div < 0.0001, 0.0001, div)
         ngr <- ngr / div
     }
+    if (stabilization == "L2") {
+      div <- sqrt(weighted.mean(ngr^2, w =w,  na.rm = TRUE))
+      div <- ifelse(div < 1e-04, 1e-04, div)
+      div <- ifelse(div > 1e+04, 1e+04, div)
+      ngr <- ngr / div
+    }
     ngr
 }
 
 
-check_stabilization <- function(stabilization = c("none", "MAD")) {
+check_stabilization <- function(stabilization = c("none", "MAD", "L2")) {
     stabilization <- match.arg(stabilization)
     ## check if old stabilization interface is used and issue a warning
     if (getOption("gamboostLSS_stab_ngrad")) {
@@ -178,7 +199,38 @@ check_stabilization <- function(stabilization = c("none", "MAD")) {
                 " is deprecated.\n", "Use argument ", sQuote("stabilization"),
                 " in the fitting family. See ?Families for details.")
         if (stabilization == "none")
-           warning(sQuote("stabilization"), " is set to ", dQuote("MAD"))
+            warning(sQuote("stabilization"), " is set to ", dQuote("MAD"))
     }
     stabilization
 }
+
+
+################################################################################
+
+# check timeformula for FDboost 
+# timeformula is named list with names according to distribution parameters of families
+# timeformula: the formula for expansion of the effects along t for functional response y(t)
+# families: specify the response distribution; see, e.g., mboostLSS_fit() 
+check_timeformula <- function(timeformula, families){
+  
+  # timeformula is named list 
+  if (is.list(timeformula)){
+    if (!all(names(timeformula) %in% names(families)) ||
+        length(unique(names(timeformula))) != length(names(families)))
+      stop(sQuote("timeformula"), " can be either a one-sided formula or a named list",
+           " of timeformulas with same names as ",  sQuote("families"), ".")
+  } else {
+    # timeformula is only one formula -> set up named list 
+    tmp <- vector("list", length = length(families))
+    names(tmp) <- names(families)
+    for (i in 1:length(tmp))
+      tmp[i] <- list(timeformula)
+    timeformula <- tmp
+  }
+  
+  timeformula
+  
+}
+
+
+
