@@ -1108,7 +1108,7 @@ addressing multiple cores from \proglang{R}, on Windows we use only one core
 whereas on Unix-based systems two cores are used. We then load the pre-computed
 results of the cross-validated risk:
 
-<<load_cvrisk, eval = FALSE, echo = TRUE, results = hide>>=
+<<load_cvrisk, echo = TRUE, results = hide, eval = FALSE>>=
 load("cvrisk/cvr_india.Rda")
 @
 \vspace{-2em} \hfill $\vardiamond$
@@ -1164,7 +1164,7 @@ plot(cvr)
 \setkeys{Gin}{width = 0.5\textwidth}
 \begin{figure}[h!]
   \centering
-<<crossvalidation, eval = FALSE, fig = true, results = hide, echo = false>>=
+<<crossvalidation, fig = true, results = hide, echo = false, eval = FALSE>>=
 <<crossvalidation_code>>
 @
 \includegraphics{fig-crossvalidation.pdf}
@@ -1184,7 +1184,7 @@ R> mstop(cvr)
  1269    84 
 \end{Sinput}
 
-<<check_initial_assignement, eval = FALSE, echo = FALSE, results = hide>>=
+<<check_initial_assignement, echo = FALSE, results = hide, eval = FALSE>>=
 ## for the purpose of the tutorial we started already with the optimal number of
 ## boosting steps. Check if this is really true:
 if (!isTRUE(all.equal(mstop(mod), mstop(cvr))))
@@ -1194,7 +1194,7 @@ if (!isTRUE(all.equal(mstop(mod), mstop(cvr))))
 To use the optimal model, i.e., the model with the iteration number from the
 cross-validation, we set the model to these values:
 
-<<subset, eval = FALSE, results = hide>>=
+<<subset, results = hide, eval = FALSE>>=
 mstop(mod) <- mstop(cvr)
 @
 

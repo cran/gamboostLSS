@@ -1,6 +1,18 @@
 \name{NEWS}
 \title{News for Package 'gamboostLSS'}
 
+\section{Changes in gamboostLSS version 2.0-1 (2018-06-14)}{
+  \subsection{Miscellaneous}{
+    \itemize{
+      \item{Export plot functions, streamlined interface of cvrisk and updated manuals.
+        Closes issue \href{https://github.com/boost-R/gamboostLSS/issues/46}{#46}.}
+      \item{Export \code{predict.mboostLSS} to make \pkg{betaboost} happy.}
+      \item{Updated reference for Thomas et al. 
+        Closes issues \href{https://github.com/boost-R/gamboostLSS/issues/47}{#47}.}
+    }
+  }
+}
+
 \section{Changes in gamboostLSS version 2.0-0 (2017-05-05)}{
   \subsection{User-visible changes}{
     \itemize{
@@ -17,8 +29,9 @@
         Thomas, J., Mayr, A., Bischl, B., Schmid, M., Smith, A., and Hofner, B. (2017), 
         Gradient boosting for distributional regression - faster tuning and improved 
         variable selection via noncyclical updates. 
-        Accepted for publication in \emph{Statistics and Computing}.\cr
-        Preliminary version: \url{http://arxiv.org/abs/1611.10171}.
+        \emph{Statistics and Computing}. Online First. 
+        DOI \href{http://dx.doi.org/10.1007/s11222-017-9754-6}{10.1007/s11222-017-9754-6}\cr
+        (Preliminary version: \url{http://arxiv.org/abs/1611.10171}).
       \item Stability selection (\code{stabsel}) implemented for \code{gamboostLSS} 
          models.
       \item Models can now be fitted with zero steps (i.e., models containing only 
