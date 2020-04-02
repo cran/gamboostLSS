@@ -1,5 +1,5 @@
 701329d436e5b660dd2a640bc484a6ed *ChangeLog
-778d18fb26a35ee667814e498251cf07 *DESCRIPTION
+3936059782722f98b4c34c6ae74a17d3 *DESCRIPTION
 2b5cc8cf6cc57c1935d14d9931ec39c3 *NAMESPACE
 7fc446c90f1f551bc7f57ba281754689 *R/AAA.R
 59c3d98d6edca3d5b2a58898848a989e *R/as.families.R
@@ -11,14 +11,14 @@ b1e3fa4ccd73e33c37ee451921a7fd24 *R/cvrisk.R
 4fa154482d61164abab4c7ab80401b7e *R/mboostLSS.R
 c5e3a88f1b2d6ddafff3a69967f50e9c *R/methods.R
 d5f9abc64c1df6a078524b61bb0e3254 *README.md
-a3fcb47351deaf1b8bb81f55ca289f6f *build/vignette.rds
-b6115fecf602581f8c361a2c6bf54723 *data/india.RData
-c1ade2b49acb37598cbbaf479ff5d5d6 *data/india.bnd.RData
+a73006cbbb1cbc7b876b0cbef4ee6942 *build/vignette.rds
+2043a7789b820f746d0e1509ca83e7b5 *data/india.RData
+afbb7b016d43a5cf662f8728a827a21a *data/india.bnd.RData
 85579b16d343cfffcfc6a7381105d99a *inst/CITATION
 a46bdcd11845a8f44fbb06103272fd73 *inst/NEWS.Rd
-b9fd99cdc1aefe1c8a17186b57a83103 *inst/doc/gamboostLSS_Tutorial.R
+0da06b8ac9cfbe9995dccb87784543d3 *inst/doc/gamboostLSS_Tutorial.R
 708d3877ae98959cf1d3b4c7cef71ead *inst/doc/gamboostLSS_Tutorial.Rnw
-061840a8d3baab59a265493e61e5e442 *inst/doc/gamboostLSS_Tutorial.pdf
+a1520424c2b7bfd854b589596d00da8d *inst/doc/gamboostLSS_Tutorial.pdf
 fcf2d00fb6e29797aa58a6ab65a7dd82 *man/as.families.Rd
 665d50ee1613fd7a61151139650d981d *man/cvrisk.Rd
 a0c07d7bc5ad87aa66b8903c34127dca *man/families.Rd
