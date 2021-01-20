@@ -79,7 +79,7 @@ mboostLSS_fit(formula, data = list(), families = GaussianLSS(),
 \details{
 
   For information on GAMLSS theory see Rigby and Stasinopoulos (2005) or
-  the information provided at \url{http://gamlss.org}. For a tutorial on
+  the information provided at \url{https://www.gamlss.com/}. For a tutorial on
   \code{\link{gamboostLSS}} see Hofner et al. (2016). Thomas et al. (2018) 
   developed a novel non-cyclic approach to fit gamboostLSS models. This approach
   is suitable for the combination with \code{\link{stabsel}} and speeds up
@@ -176,8 +176,8 @@ prediction and model fitting. Statistical Science, 22(4), 477--505.
   Gradient boosting for distributional regression - faster tuning and improved 
   variable selection via noncyclical updates. 
   \emph{Statistics and Computing}. 28: 673-687. 
-  DOI \href{http://dx.doi.org/10.1007/s11222-017-9754-6}{10.1007/s11222-017-9754-6}\cr
-  (Preliminary version: \url{http://arxiv.org/abs/1611.10171}).
+  \doi{10.1007/s11222-017-9754-6}\cr
+  (Preliminary version: \url{https://arxiv.org/abs/1611.10171}).
 }
 
 \seealso{

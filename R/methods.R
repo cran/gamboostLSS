@@ -235,7 +235,7 @@ PI <- predint <- function(x, which, pi = 0.9, newdata = NULL, ...) {
              "base-learners of one numeric variable")
     
     pred_vars <- lapply(x, extract, what = "variable.names")
-    pred_vars <- unique(unlist(pred_vars))
+    pred_vars <- unique(trimws(unlist(strsplit(unlist(pred_vars), ",")))) # fixing bug #55
     if ("(Intercept)" %in% pred_vars)
         pred_vars <- pred_vars[pred_vars != "(Intercept)"]
     
@@ -396,12 +396,20 @@ stabsel.mboostLSS <- function(x, cutoff, q, PFER,
     
     cll <- match.call()
     p <- sum(sapply(x, function(obj) length(variable.names(obj))))
-    n <- if(inherits(x, "FDboostLSS")) {
-        x[[1]]$ydim[1]
-    } else {
-        nrow(attr(x, "data"))
-    }
     
+    if(inherits(x, "FDboostLSS")) {
+      if(is.null(x[[1]]$ydim)){
+        n <- length(attr(x, "(weights)")) # scalar response
+      }else{
+        n <- x[[1]]$ydim[1] # functional reponse 
+        # correct the wrong default folds if necessary
+        if(nrow(folds) == length(model.weights(x))){
+          folds <- subsample(rep(1, n), B = B)
+        }
+      }
+    } else {
+      n <- nrow(attr(x, "data"))
+    }
     
     ## extract names of base-learners (and add paramter name)
     nms <- lapply(x, function(obj) variable.names(obj))

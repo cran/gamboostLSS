@@ -1,6 +1,49 @@
 \name{NEWS}
 \title{News for Package 'gamboostLSS'}
 
+\section{Changes in gamboostLSS version 2.0-5 (2021-01-20)}{
+  \subsection{Miscellaneous}{
+    \itemize{
+      \item{Added www and a / after the URLs to make CRAN happy.}
+    }
+  }
+}
+
+\section{Changes in gamboostLSS version 2.0-4 (2021-01-20)}{
+  \subsection{Miscellaneous}{
+    \itemize{
+      \item{Changed http to https to make CRAN happy, hopefully finally.}
+    }
+  }
+}
+
+\section{Changes in gamboostLSS version 2.0-3 (2021-01-20)}{
+  \subsection{Miscellaneous}{
+    \itemize{
+      \item{Minor changes to make CRAN happy.}
+    }
+  }
+}
+
+\section{Changes in gamboostLSS version 2.0-2 (2021-01-19)}{
+  \subsection{Bug-fixes}{
+    \itemize{
+      \item{Initialize \code{combined_risk} in \code{mboostLSS_fit} to avoid writing 
+        (and overwriting) the combined risk in the global environment.
+        Closes issue \href{https://github.com/boost-R/gamboostLSS/issues/49}{#49}.}
+      \item{Fixed \code{stabsel.mboostLSS} for models fitted with FDboostLSS.
+        Closes issue \href{https://github.com/boost-R/gamboostLSS/issues/51}{#51}.}
+      \item{Code in \file{man/families.Rd} failed.
+        Closes issue \href{https://github.com/boost-R/gamboostLSS/issues/53}{#53}.}
+      \item{\code{predint} was not working when multiple variables were included 
+        within a single baselearner.
+        Closes issue \href{https://github.com/boost-R/gamboostLSS/issues/55}{#55}.}
+      \item{Fixed CRAN checks regarding \code{all.equal} by adding 
+        \code{check.environment = FALSE}.}
+    }
+  }
+}
+
 \section{Changes in gamboostLSS version 2.0-1 (2018-06-14)}{
   \subsection{Miscellaneous}{
     \itemize{
@@ -31,7 +74,7 @@
         variable selection via noncyclical updates. 
         \emph{Statistics and Computing}. Online First. 
         DOI \href{http://dx.doi.org/10.1007/s11222-017-9754-6}{10.1007/s11222-017-9754-6}\cr
-        (Preliminary version: \url{http://arxiv.org/abs/1611.10171}).
+        (Preliminary version: \url{https://arxiv.org/abs/1611.10171}).
       \item Stability selection (\code{stabsel}) implemented for \code{gamboostLSS} 
          models.
       \item Models can now be fitted with zero steps (i.e., models containing only 
