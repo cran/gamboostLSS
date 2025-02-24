@@ -1,4 +1,75 @@
-commit 8b734570565aa6c65070321b56f73b16273ba433
+commit 124b4e0063251481a86b6b61184af54101e7c15f
+Author: Benjamin Hofner <benjamin.hofner@pei.de>
+
+    Release version 2.1-0
+
+commit 1ce27fa637e178115e687512486bcd2f7c9f53fc
+Author: Benjamin Hofner <benjamin.hofner@pei.de>
+
+    Remove testthat from suggests as it is not needed.
+
+commit 45e3fc2517355ca6b7466839e4d81aeb74bfff1b
+Author: unknown <michael.balzer@tutanota.com>
+
+    fix errors
+
+commit b05b9b59dd14791cb0ed08fc9848b98d2e83ed56
+Author: unknown <michael.balzer@tutanota.com>
+
+    fix notes in checks
+
+commit 1baa95d95088efa6d19a6ce8d2746ba369bb23ba
+Author: unknown <michael.balzer@tutanota.com>
+
+    adjust families, add comments, add tests
+
+commit 124ee5c5c7ee0dc143d7e94d5954704d2539340f
+Author: unknown <michael.balzer@tutanota.com>
+
+    run R checks, update documentation, remove notes
+
+commit a3923539a3693047cc7ad6e4c1d61d3c971e8348
+Merge: 6833804 6d67d4f
+Author: Michael Balzer <120394093+Tanzmarie@users.noreply.github.com>
+
+    Merge branch 'boost-R:master' into master
+
+commit 6d67d4f6d4a266dc7a762cda4952fc9196fe2025
+Author: Benjamin Hofner <benjamin.hofner@pei.de>
+
+    fixed minor issue in stabsel manual
+
+commit 6833804bc27edaa209b1feb6938756f0820d678e
+Author: unknown <michael.balzer@tutanota.com>
+
+    fix typos
+
+commit ee2945b53ba74b6245006a8b5a7f3fd9d18c6a18
+Author: unknown <michael.balzer@tutanota.com>
+
+    delete
+
+commit 24635504c117156292563ea342e6b9b0ec8677b7
+Author: unknown <michael.balzer@tutanota.com>
+
+    implement Dirichlet family
+
+commit c1a6350de181a3cf829231f6878d841e64c85a79
+Author: amayr <mayr@uni-bonn.de>
+
+    fix error message
+
+commit 28d9008024f2f1c9bcb6452228c501da1a00fc46
+Author: Andreas Mayr <mayr@uni-bonn.de>
+
+    fix typo in Error message
+
+commit b085c81223649bd8c5a75092fe40ea6edff06510
+Author: Andreas Mayr <mayr@uni-bonn.de>
+
+    extend warning for censored families
+
+commit 1dc1ee75d1854e9dd9cd2e29f262768865d214f6
 Author: Benjamin Hofner <benjamin.hofner@pei.de>
 
     Release version 2.0-7

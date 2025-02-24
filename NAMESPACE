@@ -8,6 +8,7 @@ importFrom("stats", "coef", "dlogis", "dnorm", "fitted", "median", "optimize",
            "plogis", "pnorm", "predict", "qlnorm", "qlogis", "qnorm", "qt",
            "qweibull", "rmultinom", "update", "var", "variable.names", "weighted.mean")
 importFrom("utils", "tail")
+importFrom("stats", "setNames")
 
 export(glmboostLSS,
        gamboostLSS,
@@ -32,6 +33,7 @@ export(glmboostLSS,
        BetaLSS, BetaMu, BetaPhi,
        WeibullLSS, WeibullMu, WeibullSigma,
        ZIPoLSS, ZINBLSS,
+       DirichletAlpha, DirichletLSS,
        gamlss.Families, as.families,
        gamlss1parMu,
        gamlss2parMu, gamlss2parSigma,
